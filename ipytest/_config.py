@@ -1,11 +1,23 @@
 """Add syntatic sugar for configuration"""
 import inspect
+from typing import Sequence, TypedDict, Union
 import warnings
 import sys
 
 default_clean = "[Tt]est*"
 
-defaults = dict(
+
+class ConfigDict(TypedDict):
+    rewrite_asserts: bool
+    magics: bool
+    clean: Union[bool, str]
+    addopts: Sequence[str]
+    run_in_thread: bool
+    defopts: bool
+    display_columns: int
+
+
+defaults: ConfigDict = dict(
     rewrite_asserts=True,
     magics=True,
     clean=default_clean,
@@ -15,7 +27,7 @@ defaults = dict(
     display_columns=100,
 )
 
-current_config = dict(
+current_config: ConfigDict = dict(
     rewrite_asserts=False,
     magics=False,
     clean=default_clean,

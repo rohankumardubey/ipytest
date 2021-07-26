@@ -10,6 +10,8 @@ import shlex
 import sys
 import tempfile
 import threading
+from types import ModuleType
+from typing import Any, Dict, Optional, Sequence, Union, cast
 
 import packaging.version
 import pytest
@@ -19,7 +21,11 @@ from IPython import get_ipython
 from ._config import current_config, default_clean
 
 
-def run(*args, module=None, plugins=()):
+def run(
+    *args,
+    module: Optional[ModuleType] = None,
+    plugins: Sequence[Union[str, object]] = (),
+) -> None:
     """Execute all tests in the passed module (defaults to __main__) with pytest.
 
     :param args:
@@ -45,10 +51,11 @@ def run(*args, module=None, plugins=()):
     )
 
 
-def pytest_magic(line, cell):
+def pytest_magic(line: str, cell: str) -> None:
     """IPython magic function running pytest"""
     if current_config["clean"] is not False:
-        clean_tests(current_config["clean"])
+        assert isinstance(current_config["clean"], str)
+        clean_tests(cast(str, current_config["clean"]))
 
     try:
         get_ipython().run_cell(cell)
@@ -67,7 +74,9 @@ def pytest_magic(line, cell):
     run(*shlex.split(line))
 
 
-def clean_tests(pattern=default_clean, items=None):
+def clean_tests(
+    pattern: Union[str] = default_clean, items: Dict[str, Any] = None
+) -> None:
     """Delete tests with names matching the given pattern.
 
     In IPython the results of all evaluations are kept in global variables
@@ -96,7 +105,7 @@ def clean_tests(pattern=default_clean, items=None):
         del items[key]
 
 
-def reload(*mods):
+def reload(*mods: str) -> None:
     """Reload all modules passed as strings.
 
     This function may be useful, when mixing code in external modules and
@@ -255,5 +264,5 @@ def run_in_thread(func, *args, **kwargs):
     return res
 
 
-def is_valid_module_name(name):
+def is_valid_module_name(name: str) -> bool:
     return all(c not in name for c in ".- ")
